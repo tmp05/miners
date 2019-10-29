@@ -26,7 +26,7 @@ class WorkerViewState extends State<WorkerView>{
     return Scaffold(
       appBar: AppBar(
         title: Text(_w.id_worker.toString()),
-        backgroundColor: (((_w.offline==false)&&(DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(_w.date)).inMinutes<15))?Colors.lightBlue:Colors.red),
+        backgroundColor: ((_w.offline==false)?Colors.lightBlue:Colors.red),
       ),
       body: SafeArea(
         top: true,
@@ -38,7 +38,7 @@ class WorkerViewState extends State<WorkerView>{
               Text("hashCode "+_w.hashCode.toString(),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
               Text("hr "+_w.hr.toString(),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
               Text("hr2  "+_w.hr2.toString(),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
-              Text("device is"+(((_w.offline==false)&&(DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(_w.date)).inMinutes<15))?" online":"offline"),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
+              Text("device is"+((_w.offline==false)?" online":" offline"),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
               TextFormField(
                 decoration: new InputDecoration(labelText: "Comment"),
                 initialValue:_w.comment,

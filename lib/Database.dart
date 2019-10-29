@@ -127,9 +127,10 @@ class DBProvider {
         "    FROM Workers"
         "    GROUP BY Workers.id_worker) new_Workers"
         "    ON WorkersInfo.id = new_Workers.id_worker"
-        "    WHERE Workers.date = Last_Date");
+        "    WHERE Workers.date = Last_Date    "
+        "    ORDER BY Workers.offline DESC");
     List<workersdata> list =
-    res.isNotEmpty ? res.map((c) => workersdata.fromMap(c)).toList() : [];
+    res.isNotEmpty ? res.map((c) =>workersdata.fromMap(c)).toList(): [];
     return list;
   }
 

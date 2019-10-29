@@ -26,8 +26,8 @@ class workerslistState extends State<workerslist>{
       title : Text(w.id_worker),
       subtitle : Text(DateTime.fromMillisecondsSinceEpoch(w.date).toString()),
       leading : CircleAvatar(
-          backgroundColor: ((w.offline==false&&(DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(w.date)).inMinutes<15))?Colors.lightBlue:Colors.red),
-          child:Text(((w.offline==false&&(DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(w.date)).inMinutes<15))?"ok":"!"))),
+          backgroundColor: (w.offline==false?Colors.lightBlue:Colors.red),
+          child:Text((w.offline==false?"ok":"!"))),
       trailing : Text("hr="+w.hr.toString()+",hr2="+w.hr2.toString()),
       onTap: () => onTapped(w),
     )).toList();
@@ -43,7 +43,7 @@ class workerslistState extends State<workerslist>{
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Mine workers'),
+          title: Text('Mine workers:' +data.length.toString()),
         ),
         body: Container(
             child: ListView(
@@ -76,6 +76,45 @@ class workerslistState extends State<workerslist>{
          var record_w = workersinfo(id:key,comment:"", wallet:"");
          await DBProvider.db.newWorker(record_w);
        });
+    }
+    final response2 = await http.get('https://zel.2miners.com/api/accounts/t1Rvs2AHVwwy9bx3NfA8FHZ1AcxcihqDEQT');
+    if (response2.statusCode==200){
+      var alldata = (json.decode(response2.body) as Map)['workers'] as Map<String,dynamic> ;
+      var date = new DateTime.now().millisecondsSinceEpoch;
+      alldata.forEach((String key,dynamic val) async {
+        print(key);
+        print(val);
+        var record = workersdata(id_worker:key,lastBeat:val["lastBeat"], hr:val["hr"].toDouble(), hr2:val["hr2"].toDouble(), offline:val["offline"],date:date);
+        await DBProvider.db.newClient(record);
+        var record_w = workersinfo(id:key,comment:"", wallet:"");
+        await DBProvider.db.newWorker(record_w);
+      });
+    }
+    final response3 = await http.get('https://zel.2miners.com/api/accounts/t1NMWZbq5XBPBWQYhpzYNP2uNcBXCJ1Up3G');
+    if (response3.statusCode==200){
+      var alldata = (json.decode(response3.body) as Map)['workers'] as Map<String,dynamic> ;
+      var date = new DateTime.now().millisecondsSinceEpoch;
+      alldata.forEach((String key,dynamic val) async {
+        print(key);
+        print(val);
+        var record = workersdata(id_worker:key,lastBeat:val["lastBeat"], hr:val["hr"].toDouble(), hr2:val["hr2"].toDouble(), offline:val["offline"],date:date);
+        await DBProvider.db.newClient(record);
+        var record_w = workersinfo(id:key,comment:"", wallet:"");
+        await DBProvider.db.newWorker(record_w);
+      });
+    }
+    final response4 = await http.get('https://zel.2miners.com/api/accounts/t1Z36NnrVLXMiQFAiJ5utuxmYevGpQRTd6x');
+    if (response4.statusCode==200){
+      var alldata = (json.decode(response4.body) as Map)['workers'] as Map<String,dynamic> ;
+      var date = new DateTime.now().millisecondsSinceEpoch;
+      alldata.forEach((String key,dynamic val) async {
+        print(key);
+        print(val);
+        var record = workersdata(id_worker:key,lastBeat:val["lastBeat"], hr:val["hr"].toDouble(), hr2:val["hr2"].toDouble(), offline:val["offline"],date:date);
+        await DBProvider.db.newClient(record);
+        var record_w = workersinfo(id:key,comment:"", wallet:"");
+        await DBProvider.db.newWorker(record_w);
+      });
     }
   }
 

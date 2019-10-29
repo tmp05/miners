@@ -28,7 +28,7 @@ class workersdata{
     lastBeat: json["lastBeat"],
     hr: json["hr"],
     hr2: json["hr2"],
-    offline: json["offline"] == 1,
+    offline: json["offline"] == 1&&(DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(json["date"])).inMinutes<15),
     comment: json["comment"],
     date: json["date"]
   );
