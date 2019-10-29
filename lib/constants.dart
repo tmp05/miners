@@ -1,3 +1,3 @@
 library Constants;
 
-const Database_name="workers_dbase";
+const Database_name="Minersbase";

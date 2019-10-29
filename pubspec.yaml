@@ -28,7 +28,7 @@ dependencies:
   http: any
   sqflite: any
   path_provider: any
-
+  flutter_native_timezone: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

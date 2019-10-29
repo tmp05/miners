@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/workersdata.dart';
 
+import 'Database.dart';
+
 
 class WorkerView extends StatefulWidget{
   workersdata w;
@@ -23,8 +25,8 @@ class WorkerViewState extends State<WorkerView>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_w.id.toString()),
-        backgroundColor: (_w.offline==false?Colors.blueGrey:Colors.red),
+        title: Text(_w.id_worker.toString()),
+        backgroundColor: (((_w.offline==false)&&(DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(_w.date)).inMinutes<15))?Colors.lightBlue:Colors.red),
       ),
       body: SafeArea(
         top: true,
@@ -32,10 +34,11 @@ class WorkerViewState extends State<WorkerView>{
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
+              Text("info time: "+DateTime.fromMillisecondsSinceEpoch(_w.date+7*60*60*1000).toLocal().toString(),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
               Text("hashCode "+_w.hashCode.toString(),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
               Text("hr "+_w.hr.toString(),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
               Text("hr2  "+_w.hr2.toString(),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
-              Text("device is"+(_w.offline==false?" online":"offline"),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
+              Text("device is"+(((_w.offline==false)&&(DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(_w.date)).inMinutes<15))?" online":"offline"),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
               TextFormField(
                 decoration: new InputDecoration(labelText: "Comment"),
                 initialValue:_w.comment,
@@ -61,6 +64,7 @@ class WorkerViewState extends State<WorkerView>{
   _saveState()  {
     setState(() {
       widget.w.comment = _comment;
+      DBProvider.db.updateWorker(widget.w.id_worker, _comment);
     });
     Navigator.pop(context);
   }

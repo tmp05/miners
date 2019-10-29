@@ -18,10 +18,9 @@ class workersdata{
   double hr2;
   bool offline;
   String comment;
-  String wallet;
   int date;
 
-  workersdata({this.id,this.id_worker, this.lastBeat, this.hr, this.hr2, this.offline, this.comment, this.wallet, this.date});
+  workersdata({this.id,this.id_worker, this.lastBeat, this.hr, this.hr2, this.offline, this.comment, this.date});
 
   factory workersdata.fromMap(Map<String, dynamic> json) => new workersdata(
     id: json["id"],
@@ -29,8 +28,8 @@ class workersdata{
     lastBeat: json["lastBeat"],
     hr: json["hr"],
     hr2: json["hr2"],
-    comment: json["comment"],
     offline: json["offline"] == 1,
+    comment: json["comment"],
     date: json["date"]
   );
 
@@ -40,8 +39,8 @@ class workersdata{
     "lastBeat": lastBeat,
     "hr": hr,
     "hr2": hr2,
-    "comment": comment,
     "offline": offline,
+    "comment": comment,
     "date": date,
   };
 }
