@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/detailswallet.dart';
+import 'package:flutter_app/wallets.dart';
+import 'package:flutter_app/walletslist.dart';
 import 'package:flutter_app/workersdata.dart';
 import 'package:flutter_app/workerslist.dart';
 import 'package:flutter_app/details.dart';
@@ -20,11 +23,11 @@ class MineTracker extends StatelessWidget{
             fullscreenDialog: false,
           );
         },
-      title:'Mine info',
+      title:'MyMine',
       theme: ThemeData(
         primarySwatch: Colors.blue
       ),
-      home: workerslist()
+      home: walletslist()
     );
 
   }
@@ -44,11 +47,16 @@ class MineTracker extends StatelessWidget{
     Object arguments,
   }) {
     switch (routeName) {
-      case '/wlist':
+      case '/wlist': //workers
         return workerslist();
-      case '/worker':
+      case '/wallets': // wallets
+        return walletslist();
+      case '/worker': // one worker
         workersdata w = arguments as workersdata;
         return WorkerView(w:w);
+      case '/wallet': // one wallet
+        wallets w = arguments as wallets;
+        return WalletView(w:w);
       default:
         throw 'Route $routeName is not defined';
     }

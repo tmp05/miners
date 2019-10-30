@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter_app/wallets.dart';
 import 'package:flutter_app/workersdata.dart';
 import 'package:flutter_app/workersinfo.dart';
 import 'package:path/path.dart';
@@ -41,6 +42,11 @@ class DBProvider {
                "id TEXT PRIMARY KEY,"
                "comment TEXT,"
                "wallet TEXT"
+               ")");
+           await db.execute("CREATE TABLE Wallets ("
+               "id TEXT PRIMARY KEY,"
+               "comment TEXT,"
+               "alias TEXT"
                ")");
         });
   }
@@ -99,6 +105,24 @@ class DBProvider {
     return res;
   }
 
+  newWallet(wallets newClient) async {
+    final db = await database;
+    var res = await db.query("Wallets", where: "id = ?", whereArgs: [newClient.id]);
+    if (res.isEmpty){
+      var raw = await db.rawInsert(
+          "INSERT Into Wallets (id, comment,alias)"
+              " VALUES (?,?,?)",
+          [newClient.id, newClient.comment, newClient.alias]);
+      print(raw);
+      return raw;
+    }
+    else{
+      var res = await db.rawUpdate("UPDATE Wallets SET comment = '"+newClient.comment+"', alias='"+newClient.alias+"' where id ='"+newClient.id+"'");
+      return res;
+    }
+
+  }
+
   getClient(int id) async {
     final db = await database;
     var res = await db.query("WorkersInfo", where: "id = ?", whereArgs: [id]);
@@ -131,6 +155,14 @@ class DBProvider {
         "    ORDER BY Workers.offline DESC");
     List<workersdata> list =
     res.isNotEmpty ? res.map((c) =>workersdata.fromMap(c)).toList(): [];
+    return list;
+  }
+
+  Future<List<wallets>> getAllWallets() async {
+    final db = await database;
+    var res = await db.rawQuery("SELECT *  FROM Wallets");
+    List<wallets> list =
+    res.isNotEmpty ? res.map((c) =>wallets.fromMap(c)).toList(): [];
     return list;
   }
 
