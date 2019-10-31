@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/wallets.dart';
-import 'package:flutter_app/wallets.dart';
-import 'package:flutter_app/workersinfo.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:flutter_app/Database.dart';
 import 'constants.dart' as Constants;
+import 'api.dart' as Api;
 
 class walletslist extends StatefulWidget{
 
@@ -27,7 +24,9 @@ class walletslistState extends State<walletslist>{
       leading : CircleAvatar(
           backgroundColor: Colors.lightBlue,
           child:Text("ok")),
+      trailing : Text("total "+w.count+", online="+w.online),
       onTap: () => onTapped(w),
+      onLongPress: ()=>onLongPress(w),
     )).toList();
   }
 
@@ -42,6 +41,12 @@ class walletslistState extends State<walletslist>{
     return Scaffold(
       appBar: AppBar(
         title: Text('Wallets:' +data.length.toString()),
+          actions: <Widget>[
+            InkWell(
+            child: Icon(Icons.add),
+            onTap: () {_addwallets(); },
+          ),
+          ],
       ),
       body: Container(
           child: ListView(
@@ -49,32 +54,39 @@ class walletslistState extends State<walletslist>{
           )
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: ()=>{_addwallets(), _loadwallets()}
+        child: Icon(Icons.refresh),
+        onPressed: ()=>_loadwallets()
       ),
     );
   }
 
   void onTapped(wallets w) async {
-    dynamic  results = await Navigator.pushNamed(context, '/wallet', arguments: w);
+    Navigator.pushNamed(context, '/wlist',arguments: w);
+   }
+
+  void onLongPress(wallets w) async {
+    dynamic  results = await Navigator.pushNamed(context, '/wallet',arguments: w);
     if (results!=null&&results.containsKey('update')) {
       _loadwallets();
     }
   }
-
   _addwallets() async{
-    dynamic  results = await Navigator.pushNamed(context, '/wallet', arguments: wallets(id:"",alias:Constants.alias,comment:""));
+    dynamic  results = await Navigator.pushNamed(context, '/wallet', arguments: wallets(id:"",alias:Constants.alias,comment:"", online:"",count: ""));
     if (results!=null&&results.containsKey('update')) {
       _loadwallets();
     }
   }
 
-   _loadwallets() async {
-     await DBProvider.db.getAllWallets().then((wWalletsList)=>{
-       setState(() {
-         data = wWalletsList;
-       })
-     });
+   void _loadwallets() async {
+    bool res = await Api.GetResponseForAll(data);
+    if (res) {
+      await DBProvider.db.getAllWallets().then((wWalletsList) =>
+      {
+        setState(() {
+          data = wWalletsList;
+        })
+      });
+    }
   }
 
 }

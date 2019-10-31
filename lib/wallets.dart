@@ -14,17 +14,17 @@ class wallets{
   String id;
   String alias;
   String comment;
-  int online;
-  int offline;
+  String online;
+  String count;
 
-  wallets({this.id,this.alias,this.comment,this.online,this.offline});
+  wallets({this.id,this.alias,this.comment,this.online,this.count});
 
   factory wallets.fromMap(Map<String, dynamic> json) => new wallets(
       id: json["id"],
       alias: json["alias"],
       comment: json["comment"],
-      online: json["online"],
-      offline: json["offline"],
+      online: json["online"].toString(),
+      count: json["count"].toString(),
   );
 
   Map<String, dynamic> toMap() => {
@@ -32,7 +32,7 @@ class wallets{
     "alias": alias,
     "comment": comment,
     "online": online,
-    "offline": offline,
+    "count": count,
   };
 }
 

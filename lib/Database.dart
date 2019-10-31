@@ -46,7 +46,9 @@ class DBProvider {
            await db.execute("CREATE TABLE Wallets ("
                "id TEXT PRIMARY KEY,"
                "comment TEXT,"
-               "alias TEXT"
+               "alias TEXT,"
+               "online TEXT,"
+               "count TEXT"
                ")");
         });
   }
@@ -83,7 +85,12 @@ class DBProvider {
       print(raw);
       return raw;
     }
-
+     else{
+      var raw = await db.rawUpdate(
+           "UPDATE  WorkersInfo SET comment = '"+newClient.comment+"', wallet='"+newClient.wallet+"' where id ='"+newClient.id+"'");
+      print(raw);
+      return raw;
+     }
   }
 
   blockOrUnblock(workersdata client) async {
@@ -123,6 +130,37 @@ class DBProvider {
 
   }
 
+  Future getCountWorkers(wallets newClient) async {
+    final db = await database;
+    var res = await db.rawQuery("Select count(workersinfo.id) as count FROM WorkersInfo WHERE WorkersInfo.wallet='"+newClient.id+"'");
+    res.forEach((row) {
+      return row['count'];
+    });
+ }
+
+  Future<List<wallets>> getOnlineAndCount(wallets newClient) async {
+    final db = await database;
+    var res = await db.rawQuery("Select Wallet.id, Wallet.alias, Wallet.comment, Onlineworkers.online, Allworkers.count from "
+        "      (Select count(Workersdata.id_worker) as online from Wallets"
+        "        LEFT JOIN (SELECT WorkersInfo.comment,WorkersInfo.wallet, Workers.*"
+        "        FROM WorkersInfo LEFT JOIN Workers"
+        "        ON  WorkersInfo.id = Workers.id_worker LEFT JOIN"
+        "        (SELECT MAX(Workers.date) AS Last_Date, Workers.id_worker"
+        "    FROM Workers"
+        "    GROUP BY Workers.id_worker) new_Workers"
+        "    ON WorkersInfo.id = new_Workers.id_worker"
+        "    WHERE Workers.date = Last_Date) as Workersdata"
+        "    on Wallets.id=Workersdata.wallet"
+        "    WHERE Workersdata.offline=0 AND Wallets.id='"+newClient.id+"') as Onlineworkers"
+        "    LEFT JOIN"
+        "    ( Select count(WorkersInfo.id) as count FROM WorkersInfo WHERE WorkersInfo.wallet='"+newClient.id+"' ) as Allworkers on 1=1"
+        "    LEFT JOIN"
+        "    ( Select *  FROM Wallets WHERE Wallets.id='"+newClient.id+"' ) as Wallet on 1=1");
+    List<wallets> list =
+    res.isNotEmpty ? res.map((c) =>wallets.fromMap(c)).toList(): [];
+    return list;
+  }
+
   getClient(int id) async {
     final db = await database;
     var res = await db.query("WorkersInfo", where: "id = ?", whereArgs: [id]);
@@ -142,7 +180,7 @@ class DBProvider {
   }
   //SELECT MAX(id)+1 as id FROM Workers
 
-  Future<List<workersdata>> getAllClients() async {
+  Future<List<workersdata>> getAllWalletClients(wallets w) async {
     final db = await database;
     var res = await db.rawQuery("SELECT WorkersInfo.comment, Workers.* "
         "    FROM WorkersInfo LEFT JOIN Workers"
@@ -151,7 +189,7 @@ class DBProvider {
         "    FROM Workers"
         "    GROUP BY Workers.id_worker) new_Workers"
         "    ON WorkersInfo.id = new_Workers.id_worker"
-        "    WHERE Workers.date = Last_Date    "
+        "    WHERE Workers.date = Last_Date AND WorkersInfo.wallet='"+w.id+"'"
         "    ORDER BY Workers.offline DESC");
     List<workersdata> list =
     res.isNotEmpty ? res.map((c) =>workersdata.fromMap(c)).toList(): [];
@@ -160,7 +198,17 @@ class DBProvider {
 
   Future<List<wallets>> getAllWallets() async {
     final db = await database;
-    var res = await db.rawQuery("SELECT *  FROM Wallets");
+    var res = await db.rawQuery("Select Wallet.id, Wallet.alias, Wallet.comment, Onlineworkers.online, Allworkers.count"
+        "        from ( Select *  FROM Wallets  ) as Wallet"
+        "    LEFT JOIN       (Select count(Workersdata.id_worker) as online, Wallets.id from Wallets"
+        "    LEFT JOIN (SELECT WorkersInfo.comment,WorkersInfo.wallet, Workers.*    FROM WorkersInfo LEFT JOIN Workers"
+        "    ON  WorkersInfo.id = Workers.id_worker LEFT JOIN"
+        "    (SELECT MAX(Workers.date) AS Last_Date, Workers.id_worker    FROM Workers    GROUP BY Workers.id_worker) new_Workers"
+        "    ON WorkersInfo.id = new_Workers.id_worker    WHERE Workers.date = Last_Date) as Workersdata"
+        "    on Wallets.id=Workersdata.wallet"
+        "    WHERE Workersdata.offline=0"
+        "    GROUP BY Wallets.id) as Onlineworkers   on Onlineworkers.id=Wallet.id"
+        "    LEFT JOIN    ( Select count(WorkersInfo.id) as count, WorkersInfo.wallet FROM WorkersInfo GROUP BY WorkersInfo.wallet) as Allworkers on Onlineworkers.id=Allworkers.wallet");
     List<wallets> list =
     res.isNotEmpty ? res.map((c) =>wallets.fromMap(c)).toList(): [];
     return list;

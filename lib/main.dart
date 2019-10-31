@@ -48,7 +48,8 @@ class MineTracker extends StatelessWidget{
   }) {
     switch (routeName) {
       case '/wlist': //workers
-        return workerslist();
+        wallets w = arguments as wallets;
+        return workerslist(w:w);
       case '/wallets': // wallets
         return walletslist();
       case '/worker': // one worker

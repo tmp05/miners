@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/wallets.dart';
-import 'constants.dart' as Constants;
+import 'api.dart' as Api;
 import 'Database.dart';
 
 
@@ -72,7 +72,17 @@ class WalletViewState extends State<WalletView>{
   _saveState() async{
     dynamic result = await DBProvider.db.newWallet(widget.w);
     if (result!=null){
-      Navigator.pop(context,{'update': true});
+      bool res = await Api.GetResponse(widget.w.alias, widget.w.id);
+      if (res) {
+        await DBProvider.db.getOnlineAndCount(widget.w).then((wDatabaseList) =>
+        {
+          setState(() {
+            widget.w.online = wDatabaseList[0].online.toString();
+            widget.w.count = wDatabaseList[0].count.toString();
+          })
+        });
+        Navigator.pop(context, {'update': true});
+      }
     }
   }
 }
