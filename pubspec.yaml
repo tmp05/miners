@@ -29,6 +29,7 @@ dependencies:
   sqflite: any
   path_provider: any
   flutter_native_timezone: any
+  swipedetector: ^1.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

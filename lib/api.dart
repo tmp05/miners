@@ -25,8 +25,9 @@ GetResponse(String alias, String id) async{
       var record_w = workersinfo(id: key, comment: "", wallet: id);
       await DBProvider.db.newWorker(record_w);
     });
+    return true;
   }
-  return true;
+  else {return false;}
 }
 
 GetResponseForAll(List<wallets> list) async{

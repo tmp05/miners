@@ -16,6 +16,7 @@ class WalletView extends StatefulWidget{
 
 class WalletViewState extends State<WalletView>{
   wallets _w;
+  final _formKey = GlobalKey<FormState>();
 
   WalletViewState({@required wallets w}) : _w = w;
 
@@ -24,16 +25,18 @@ class WalletViewState extends State<WalletView>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_w.id.isEmpty?"New wallet":_w.id),
+        title: Text( _w.id ?? 'New wallet'),
         backgroundColor: Colors.lightBlue,
       ),
       body: SafeArea(
         top: true,
-        child: Center(
+        child: Form(
+          key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               TextFormField(
+                validator: (value)  => _check(widget.w),
                 decoration: new InputDecoration(labelText: "Id"),
                 initialValue:_w.id,
                 onChanged: (newval){
@@ -41,6 +44,9 @@ class WalletViewState extends State<WalletView>{
                 },
               ),
               TextFormField(
+                validator: (value){
+                  if (value.isEmpty) return 'Alias is empty';
+                },
                 decoration: new InputDecoration(labelText: "Alias"),
                 initialValue:_w.alias,
                 onChanged: (newval){
@@ -69,21 +75,28 @@ class WalletViewState extends State<WalletView>{
     );
   }
 
+  _check  (wallets w) {
+    if (w.id=='') {return 'Id is empty';}
+    Api.GetResponse(w.alias, w.id ?? '').then((res) {
+      if (res!=null) {return null;}
+      else {return 'Wrong Id for the Alias';}
+    });
+  }
   _saveState() async{
-    dynamic result = await DBProvider.db.newWallet(widget.w);
-    if (result!=null){
-      bool res = await Api.GetResponse(widget.w.alias, widget.w.id);
-      if (res) {
-        await DBProvider.db.getOnlineAndCount(widget.w).then((wDatabaseList) =>
-        {
-          setState(() {
-            widget.w.online = wDatabaseList[0].online.toString();
-            widget.w.count = wDatabaseList[0].count.toString();
-          })
-        });
-        Navigator.pop(context, {'update': true});
+    if(_formKey.currentState.validate()) {
+          dynamic result = await DBProvider.db.newWallet(widget.w);
+          if (result!=null) {
+            await DBProvider.db.getOnlineAndCount(widget.w).then((
+                wDatabaseList) =>
+            {
+              setState(() {
+                widget.w.online = wDatabaseList[0].online.toString();
+                widget.w.count = wDatabaseList[0].count.toString();
+              })
+            });
+            Navigator.pop(context, {'update': true});
+          }
       }
-    }
   }
 }
 

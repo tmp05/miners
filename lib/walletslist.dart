@@ -3,6 +3,7 @@ import 'package:flutter_app/wallets.dart';
 import 'package:flutter_app/Database.dart';
 import 'constants.dart' as Constants;
 import 'api.dart' as Api;
+import 'package:swipedetector/swipedetector.dart';
 
 class walletslist extends StatefulWidget{
 
@@ -15,18 +16,40 @@ class walletslist extends StatefulWidget{
 class walletslistState extends State<walletslist>{
 
   List<wallets> data = [];
-
+  String _swipeDirection = "";
 
   List <Widget> _buildList() {
-    return data.map((wallets w)=>ListTile(
-      title : Text(w.id.toString()),
-      subtitle : Text(w.comment),
-      leading : CircleAvatar(
-          backgroundColor: Colors.lightBlue,
-          child:Text("ok")),
-      trailing : Text("total "+w.count+", online="+w.online),
-      onTap: () => onTapped(w),
-      onLongPress: ()=>onLongPress(w),
+    return data.map((wallets w)=>SwipeDetector(
+      child: ListTile(
+        title : Text(w.id.toString()),
+        subtitle : Text( w.comment ?? ''),
+        leading : CircleAvatar(
+            backgroundColor: Colors.lightBlue,
+            child:Text("ok")),
+        trailing : Text("total "+w.count+", online="+w.online),
+        onTap: () => onTapped(w),
+        onLongPress: ()=>onLongPress(w),
+      ),
+      onSwipeUp: () {
+        setState(() {
+          _swipeDirection = "Swipe Up";
+        });
+      },
+      onSwipeDown: () {
+        setState(() {
+          _swipeDirection = "Swipe Down";
+        });
+      },
+      onSwipeLeft: () {
+        setState(() {
+          _swipeDirection = "Swipe Left";
+        });
+      },
+      onSwipeRight: () {
+        setState(() {
+          _swipeDirection = "Swipe Right";
+        });
+      },
     )).toList();
   }
 
@@ -40,7 +63,7 @@ class walletslistState extends State<walletslist>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Wallets:' +data.length.toString()),
+        title: Text('Wallets:' +data.length.toString()+' Swipe'+_swipeDirection),
           actions: <Widget>[
             InkWell(
             child: Icon(Icons.add),
