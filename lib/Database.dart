@@ -55,18 +55,8 @@ class DBProvider {
 
   newClient(workersdata newClient) async {
     final db = await database;
-    //get the biggest id in the table
-//    var table = await db.rawQuery("SELECT MAX(id)+1 as id FROM Workers");
-//    print(table);
-//    int id = table.first["id"];
-//    print("trying to insert #"+id.toString());
-       //insert to the table using the new id
     print(newClient);
     var raw = await db.rawInsert(
-
-   //     "INSERT Into Workers (id,lastbeat,hr,hr2,offline,comment)"
-   //         " VALUES (?,?,?,?,?,?)",
-   //     [newClient.id, newClient.lastBeat, newClient.hr, newClient.hr2,(newClient.offline)? 1 : 0, newClient.comment.toString()]);
              "INSERT Into Workers (id_worker, lastbeat,hr,hr2,offline,date)"
                  " VALUES (?,?,?,?,?,?)",
              [newClient.id_worker, newClient.lastBeat, newClient.hr, newClient.hr2,(newClient.offline)? 1 : 0,newClient.date]);
@@ -180,35 +170,42 @@ class DBProvider {
   }
   //SELECT MAX(id)+1 as id FROM Workers
 
-  Future<List<workersdata>> getAllWalletClients(wallets w) async {
+  Future<List<workersdata>> getAllWalletClients(wallets w) async {//get all workers in one wallet
     final db = await database;
-    var res = await db.rawQuery("SELECT WorkersInfo.comment, Workers.* "
-        "    FROM WorkersInfo LEFT JOIN Workers"
-        "    ON  WorkersInfo.id = Workers.id_worker LEFT JOIN"
-        "    (SELECT MAX(Workers.date) AS Last_Date, Workers.id_worker"
-        "    FROM Workers"
-        "    GROUP BY Workers.id_worker) new_Workers"
-        "    ON WorkersInfo.id = new_Workers.id_worker"
-        "    WHERE Workers.date = Last_Date AND WorkersInfo.wallet='"+w.id+"'"
-        "    ORDER BY Workers.offline DESC");
+    var res = await db.rawQuery("SELECT WorkersInfo.comment, Workers.id, Workers.id_worker,Workers.date,Workers.lastBeat ,Workers.hr,Workers.hr2, "
+    "   CASE "
+    "   WHEN (CAST(strftime(\"%s\", \"now\")  as integer)- Workers.date)<9000 and Workers.offline=0    THEN 0 "
+    "   ELSE 1 "
+    "   END as offline "
+    "   FROM WorkersInfo LEFT JOIN Workers "
+    "   ON  WorkersInfo.id = Workers.id_worker LEFT JOIN "
+    "   (SELECT MAX(Workers.date) AS Last_Date, Workers.id_worker "
+    "   FROM Workers "
+    "   GROUP BY Workers.id_worker) new_Workers "
+    "   ON WorkersInfo.id = new_Workers.id_worker "
+    "   WHERE Workers.date = Last_Date AND WorkersInfo.wallet='"+w.id+"' "
+    "   ORDER BY Workers.offline DESC");
     List<workersdata> list =
     res.isNotEmpty ? res.map((c) =>workersdata.fromMap(c)).toList(): [];
     return list;
   }
 
-  Future<List<wallets>> getAllWallets() async {
+  Future<List<wallets>> getAllWallets() async {  //get all wallets and all workers to show the count of online and offline
     final db = await database;
-    var res = await db.rawQuery("Select Wallet.id, Wallet.alias, Wallet.comment, Onlineworkers.online, Allworkers.count"
-        "        from ( Select *  FROM Wallets  ) as Wallet"
-        "    LEFT JOIN       (Select count(Workersdata.id_worker) as online, Wallets.id from Wallets"
-        "    LEFT JOIN (SELECT WorkersInfo.comment,WorkersInfo.wallet, Workers.*    FROM WorkersInfo LEFT JOIN Workers"
-        "    ON  WorkersInfo.id = Workers.id_worker LEFT JOIN"
-        "    (SELECT MAX(Workers.date) AS Last_Date, Workers.id_worker    FROM Workers    GROUP BY Workers.id_worker) new_Workers"
-        "    ON WorkersInfo.id = new_Workers.id_worker    WHERE Workers.date = Last_Date) as Workersdata"
-        "    on Wallets.id=Workersdata.wallet"
-        "    WHERE Workersdata.offline=0"
-        "    GROUP BY Wallets.id) as Onlineworkers   on Onlineworkers.id=Wallet.id"
-        "    LEFT JOIN    ( Select count(WorkersInfo.id) as count, WorkersInfo.wallet FROM WorkersInfo GROUP BY WorkersInfo.wallet) as Allworkers on Onlineworkers.id=Allworkers.wallet");
+    var res = await db.rawQuery("Select Wallet.id, Wallet.alias, Wallet.comment, ifnull(Onlineworkers.online, 0) as online, Allworkers.count "
+        " from ( Select *  FROM Wallets  ) as Wallet "
+        " LEFT JOIN "
+        " (Select count(Workersdata.id_worker) as online, Wallets.id from Wallets "
+        " LEFT JOIN "
+        " (SELECT WorkersInfo.comment,WorkersInfo.wallet, Workers.*    FROM WorkersInfo LEFT JOIN Workers "
+        " ON  WorkersInfo.id = Workers.id_worker LEFT JOIN "
+        " (SELECT MAX(Workers.date) AS Last_Date, Workers.id_worker    FROM Workers    GROUP BY Workers.id_worker) new_Workers "
+        " ON WorkersInfo.id = new_Workers.id_worker    WHERE Workers.date = Last_Date) as Workersdata "
+        " on Wallets.id=Workersdata.wallet "
+        " WHERE Workersdata.offline=0 AND "
+        " (CAST(strftime(\"%s\", \"now\")  as integer) - Workersdata.date)<9000 "
+        " GROUP BY Wallets.id) as Onlineworkers   on Onlineworkers.id=Wallet.id "
+        " LEFT JOIN    ( Select count(WorkersInfo.id) as count, WorkersInfo.wallet FROM WorkersInfo GROUP BY WorkersInfo.wallet) as Allworkers on Onlineworkers.id=Allworkers.wallet");
     List<wallets> list =
     res.isNotEmpty ? res.map((c) =>wallets.fromMap(c)).toList(): [];
     return list;

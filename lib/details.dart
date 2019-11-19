@@ -34,7 +34,7 @@ class WorkerViewState extends State<WorkerView>{
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Text("info time: "+DateTime.fromMillisecondsSinceEpoch(_w.date+7*60*60*1000).toLocal().toString(),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
+              Text("info time: "+DateTime.fromMillisecondsSinceEpoch(_w.date*1000+7*60*60*1000).toLocal().toString(),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
               Text("hashCode "+_w.hashCode.toString(),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
               Text("hr "+_w.hr.toString(),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),
               Text("hr2  "+_w.hr2.toString(),style:TextStyle(fontWeight: FontWeight.bold, fontSize: 18, height: 2)),

@@ -11,7 +11,8 @@ GetResponse(String alias, String id) async{
     var alldata = (json.decode(response2.body) as Map)['workers'] as Map<
         String,
         dynamic>;
-    var date = new DateTime.now().millisecondsSinceEpoch;
+    double datedouble = new DateTime.now().millisecondsSinceEpoch/1000.toInt();
+    int dateint = datedouble.toInt();
     alldata.forEach((String key, dynamic val) async {
       print(key);
       print(val);
@@ -20,7 +21,7 @@ GetResponse(String alias, String id) async{
           hr: val["hr"].toDouble(),
           hr2: val["hr2"].toDouble(),
           offline: val["offline"],
-          date: date);
+          date: dateint);
       await DBProvider.db.newClient(record);
       var record_w = workersinfo(id: key, comment: "", wallet: id);
       await DBProvider.db.newWorker(record_w);
@@ -32,26 +33,7 @@ GetResponse(String alias, String id) async{
 
 GetResponseForAll(List<wallets> list) async{
   for(var item in list ) {
-    final response2 = await http.get(item.alias + "/api/accounts/" + item.id);
-    if (response2.statusCode == 200) {
-      var alldata = (json.decode(response2.body) as Map)['workers'] as Map<
-          String,
-          dynamic>;
-      var date = new DateTime.now().millisecondsSinceEpoch;
-      alldata.forEach((String key, dynamic val) async {
-        print(key);
-        print(val);
-        var record = workersdata(id_worker: key,
-            lastBeat: val["lastBeat"],
-            hr: val["hr"].toDouble(),
-            hr2: val["hr2"].toDouble(),
-            offline: val["offline"],
-            date: date);
-        await DBProvider.db.newClient(record);
-        var record_w = workersinfo(id: key, comment: "", wallet: item.id);
-        await DBProvider.db.newWorker(record_w);
-      });
-    }
+    GetResponse(item.alias, item.id);
   }
   return true;
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/constants.dart';
 import 'package:flutter_app/wallets.dart';
 import 'api.dart' as Api;
 import 'Database.dart';
@@ -78,7 +79,7 @@ class WalletViewState extends State<WalletView>{
   _check  (wallets w) {
     if (w.id=='') {return 'Id is empty';}
     Api.GetResponse(w.alias, w.id ?? '').then((res) {
-      if (res!=null) {return null;}
+      if (res) {return null;}
       else {return 'Wrong Id for the Alias';}
     });
   }

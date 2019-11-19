@@ -28,7 +28,7 @@ class workerslistState extends State<workerslist>{
   List <Widget> _buildList() {
     return data.map((workersdata w)=>ListTile(
       title : Text(w.id_worker),
-      subtitle : Text(DateTime.fromMillisecondsSinceEpoch(w.date).toString()),
+      subtitle : Text(DateTime.fromMillisecondsSinceEpoch(w.date*1000).toString()),
       leading : CircleAvatar(
           backgroundColor: (w.offline==false?Colors.lightBlue:Colors.red),
           child:Text((w.offline==false?"ok":"!"))),

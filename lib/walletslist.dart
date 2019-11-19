@@ -42,6 +42,7 @@ class walletslistState extends State<walletslist>{
       },
       onSwipeLeft: () {
         setState(() {
+          data.removeAt(data.indexOf(w));
           _swipeDirection = "Swipe Left";
         });
       },

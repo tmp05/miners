@@ -1,6 +1,6 @@
 library Constants;
 
-const Database_name="WalMinersDatabase";
+const Database_name="WMineData";
 const alias="https://zel.2miners.com";
 //https://zel.2miners.com/api/accounts/t1NaaN8fjEhKmCvZ5YXEVxWdXass6mMNRRh
 //https://zel.2miners.com/api/accounts/t1Rvs2AHVwwy9bx3NfA8FHZ1AcxcihqDEQT
