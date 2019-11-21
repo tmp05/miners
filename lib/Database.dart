@@ -215,9 +215,9 @@ class DBProvider {
     return list;
   }
 
-  deleteClient(int id) async {
+  deleteClient(String id) async {
     final db = await database;
-    return db.delete("Workers", where: "id = ?", whereArgs: [id]);
+    return db.delete("Wallets", where: "id = ?", whereArgs: [id]);
   }
 
   deleteAll() async {

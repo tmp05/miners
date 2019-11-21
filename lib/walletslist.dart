@@ -37,7 +37,7 @@ class walletslistState extends State<walletslist>{
                       Navigator.of(context).pop(true);
                       setState(() {
                         data.remove(w);
-                        //добавить удаление кошелька!!!
+                        DBProvider.db.deleteClient(w.id);
                       });
                     },
                     child: const Text("DELETE")
@@ -83,8 +83,9 @@ class walletslistState extends State<walletslist>{
   void initState(){
     super.initState();
     _refreshwallets();
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _refreshIndicatorKey.currentState.show());
+    Future.delayed(Duration(milliseconds: 200)).then((_) {
+      _refreshIndicatorKey.currentState?.show();
+    });
   }
 
   @override
@@ -96,7 +97,7 @@ class walletslistState extends State<walletslist>{
           actions: <Widget>[
             InkWell(
             child: Icon(Icons.add),
-            onTap: () {_addwallets(); },
+            onTap: () =>_addwallets(),
           ),
           ],
       ),
@@ -121,11 +122,14 @@ class walletslistState extends State<walletslist>{
       _refreshwallets();
     }
   }
-  _addwallets() async{
-    dynamic  results = await Navigator.pushNamed(context, '/wallet', arguments: wallets(id:"",alias:Constants.alias,comment:"", online:"",count: ""));
-    if (results!=null&&results.containsKey('update')) {
-      _refreshwallets();
-    }
+  Future<Null> _addwallets() async{
+    dynamic  results = await
+    Navigator.pushNamed(context, '/wallet', arguments: wallets(id:"",alias:Constants.alias,comment:"", online:"",count: "")).then((_res){
+      if (_res!=null) {
+      //&&_res.containsKey('update')
+        _refreshwallets();
+      }
+    });
   }
 
   Future<Null> _refreshwallets() async {

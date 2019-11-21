@@ -66,7 +66,7 @@ class workerslistState extends State<workerslist>{
   }
 
     Future<Null> _refreshworkers() async {
-    await new Future.delayed(new Duration(seconds: 5));
+    await new Future.delayed(new Duration(seconds: 2));
     await DBProvider.db.getAllWalletClients(_w).then((wDatabaseList)=>{
       setState(() {
         data = wDatabaseList;
