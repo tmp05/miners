@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/workersdata.dart';
-import 'package:flutter_app/workersinfo.dart';
 import 'package:flutter_app/wallets.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:flutter_app/Database.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 class workerslist extends StatefulWidget{
   wallets w;
@@ -18,7 +16,7 @@ class workerslist extends StatefulWidget{
 
 class workerslistState extends State<workerslist>{
   wallets _w;
-
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =  new GlobalKey<RefreshIndicatorState>();
   workerslistState({@required wallets w}) : _w = w;
 
   List<workersdata> data = [];
@@ -41,6 +39,8 @@ class workerslistState extends State<workerslist>{
   void initState(){
     super.initState();
     _refreshworkers();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _refreshIndicatorKey.currentState.show());
   }
 
   @override
@@ -49,16 +49,15 @@ class workerslistState extends State<workerslist>{
         appBar: AppBar(
           title: Text(_w.comment+"("+data.length.toString()+")"),
         ),
-        body: Container(
+        body: LiquidPullToRefresh(
+            key: _refreshIndicatorKey,
+            showChildOpacityTransition:true,
+            onRefresh:_refreshworkers,
             child: ListView(
               children: _buildList(),
 
             )
         ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.refresh),
-        onPressed: ()=>_refreshworkers(),
-      ),
     );
   }
 
@@ -66,8 +65,8 @@ class workerslistState extends State<workerslist>{
     Navigator.pushNamed(context, '/worker', arguments: w);
   }
 
-
-  _refreshworkers() async {
+    Future<Null> _refreshworkers() async {
+    await new Future.delayed(new Duration(seconds: 5));
     await DBProvider.db.getAllWalletClients(_w).then((wDatabaseList)=>{
       setState(() {
         data = wDatabaseList;
