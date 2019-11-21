@@ -172,7 +172,7 @@ class DBProvider {
 
   Future<List<workersdata>> getAllWalletClients(wallets w) async {//get all workers in one wallet
     final db = await database;
-    var res = await db.rawQuery("SELECT WorkersInfo.comment, Workers.id, Workers.id_worker,Workers.date,Workers.lastBeat ,Workers.hr,Workers.hr2, "
+    var res = await db.rawQuery("SELECT WorkersInfo.comment, Workers.id, Workers.id_worker,Workers.date,Workers.lastBeat ,Workers.hr,Workers.hr2,CAST(strftime(\"%s\", \"now\")  as integer)- Workers.date, Workers.offline as oldoffline, "
     "   CASE "
     "   WHEN (CAST(strftime(\"%s\", \"now\")  as integer)- Workers.date)<9000 and Workers.offline=0    THEN 0 "
     "   ELSE 1 "
@@ -184,7 +184,11 @@ class DBProvider {
     "   GROUP BY Workers.id_worker) new_Workers "
     "   ON WorkersInfo.id = new_Workers.id_worker "
     "   WHERE Workers.date = Last_Date AND WorkersInfo.wallet='"+w.id+"' "
-    "   ORDER BY Workers.offline DESC");
+    "   ORDER BY "
+        " CASE "
+        "   WHEN (CAST(strftime(\"%s\", \"now\")  as integer)- Workers.date)<9000 and Workers.offline=0    THEN 0 "
+        "   ELSE 1 "
+        "   END DESC");
     List<workersdata> list =
     res.isNotEmpty ? res.map((c) =>workersdata.fromMap(c)).toList(): [];
     return list;

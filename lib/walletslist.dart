@@ -3,7 +3,7 @@ import 'package:flutter_app/wallets.dart';
 import 'package:flutter_app/Database.dart';
 import 'constants.dart' as Constants;
 import 'api.dart' as Api;
-import 'package:swipedetector/swipedetector.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 class walletslist extends StatefulWidget{
 
@@ -17,9 +17,55 @@ class walletslistState extends State<walletslist>{
 
   List<wallets> data = [];
   String _swipeDirection = "";
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =  new GlobalKey<RefreshIndicatorState>();
 
   List <Widget> _buildList() {
-    return data.map((wallets w)=>SwipeDetector(
+    return data.map((wallets w)=>Dismissible(
+      key:  ValueKey(w),
+      confirmDismiss: (DismissDirection direction) async {
+        if (direction == DismissDirection.endToStart){
+          final bool res = await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Confirm"),
+              content: const Text("Are you sure you wish to delete this wallet?"),
+              actions: <Widget>[
+                FlatButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(true);
+                      setState(() {
+                        data.remove(w);
+                        //добавить удаление кошелька!!!
+                      });
+                    },
+                    child: const Text("DELETE")
+                ),
+                FlatButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text("CANCEL"),
+                ),
+              ],
+            );
+          },
+        );}
+      },
+      background: Container(
+        color: Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 30),
+        alignment: AlignmentDirectional.centerStart,
+      ),
+      secondaryBackground: Container(
+          color: Colors.red,
+          padding: EdgeInsets.symmetric(horizontal: 30),
+          alignment: AlignmentDirectional.centerEnd,
+          //padding: EdgeInsets.symmetric(horizontal: 20),
+          //alignment: AlignmentDirectional.centerStart,
+          child: Icon(
+            Icons.delete_forever,
+      ),
+      ),
       child: ListTile(
         title : Text(w.id.toString()),
         subtitle : Text( w.comment ?? ''),
@@ -30,41 +76,23 @@ class walletslistState extends State<walletslist>{
         onTap: () => onTapped(w),
         onLongPress: ()=>onLongPress(w),
       ),
-      onSwipeUp: () {
-        setState(() {
-          _swipeDirection = "Swipe Up";
-        });
-      },
-      onSwipeDown: () {
-        setState(() {
-          _swipeDirection = "Swipe Down";
-        });
-      },
-      onSwipeLeft: () {
-        setState(() {
-          data.removeAt(data.indexOf(w));
-          _swipeDirection = "Swipe Left";
-        });
-      },
-      onSwipeRight: () {
-        setState(() {
-          _swipeDirection = "Swipe Right";
-        });
-      },
     )).toList();
   }
 
   @override
   void initState(){
     super.initState();
-    _loadwallets();
+    _refreshwallets();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _refreshIndicatorKey.currentState.show());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: Text('Wallets:' +data.length.toString()+' Swipe'+_swipeDirection),
+        title: Text('Wallets:' +data.length.toString()+_swipeDirection),
           actions: <Widget>[
             InkWell(
             child: Icon(Icons.add),
@@ -72,14 +100,13 @@ class walletslistState extends State<walletslist>{
           ),
           ],
       ),
-      body: Container(
+      body: LiquidPullToRefresh(
+          key: _refreshIndicatorKey,
+          showChildOpacityTransition:true,
+          onRefresh:_refreshwallets,
           child: ListView(
-            children: _buildList(),
-          )
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.refresh),
-        onPressed: ()=>_loadwallets()
+                children: _buildList(),
+              )
       ),
     );
   }
@@ -91,26 +118,21 @@ class walletslistState extends State<walletslist>{
   void onLongPress(wallets w) async {
     dynamic  results = await Navigator.pushNamed(context, '/wallet',arguments: w);
     if (results!=null&&results.containsKey('update')) {
-      _loadwallets();
+      _refreshwallets();
     }
   }
   _addwallets() async{
     dynamic  results = await Navigator.pushNamed(context, '/wallet', arguments: wallets(id:"",alias:Constants.alias,comment:"", online:"",count: ""));
     if (results!=null&&results.containsKey('update')) {
-      _loadwallets();
+      _refreshwallets();
     }
   }
 
-   void _loadwallets() async {
-    bool res = await Api.GetResponseForAll(data);
-    if (res) {
-      await DBProvider.db.getAllWallets().then((wWalletsList) =>
-      {
-        setState(() {
-          data = wWalletsList;
-        })
-      });
-    }
+  Future<Null> _refreshwallets() async {
+    await new Future.delayed(new Duration(seconds: 5));
+    return Api.GetResponseForAll(data).then((_res){ DBProvider.db.getAllWallets().then((wWalletsList) =>
+    {setState(() { data = wWalletsList;})});});
+
   }
 
 }

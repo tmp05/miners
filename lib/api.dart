@@ -31,7 +31,7 @@ GetResponse(String alias, String id) async{
   else {return false;}
 }
 
-GetResponseForAll(List<wallets> list) async{
+Future<bool> GetResponseForAll(List<wallets> list) async{
   for(var item in list ) {
     GetResponse(item.alias, item.id);
   }
