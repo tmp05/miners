@@ -35,6 +35,7 @@ class DBProvider {
               "lastBeat INTEGER,"
               "hr REAL,"
               "hr2 REAL,"
+              "stathr REAL,"
               "offline INTEGER,"
               "date INTEGER"
               ")");

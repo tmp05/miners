@@ -3,6 +3,8 @@ import 'package:flutter_app/workersdata.dart';
 import 'package:flutter_app/wallets.dart';
 import 'package:flutter_app/Database.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import 'api.dart' as Api;
+import 'package:intl/intl.dart';
 
 class workerslist extends StatefulWidget{
   wallets w;
@@ -26,7 +28,7 @@ class workerslistState extends State<workerslist>{
   List <Widget> _buildList() {
     return data.map((workersdata w)=>ListTile(
       title : Text(w.id_worker),
-      subtitle : Text(DateTime.fromMillisecondsSinceEpoch(w.date*1000).toString()),
+      subtitle : Text(DateFormat('yyyy-MM-dd kk:mm:ss').format(DateTime.fromMillisecondsSinceEpoch(w.date*1000))),
       leading : CircleAvatar(
           backgroundColor: (w.offline==false?Colors.lightBlue:Colors.red),
           child:Text((w.offline==false?"ok":"!"))),
@@ -39,8 +41,9 @@ class workerslistState extends State<workerslist>{
   void initState(){
     super.initState();
     _refreshworkers();
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _refreshIndicatorKey.currentState.show());
+    Future.delayed(Duration(milliseconds: 200)).then((_) {
+      _refreshIndicatorKey.currentState?.show();
+    });
   }
 
   @override
@@ -65,13 +68,9 @@ class workerslistState extends State<workerslist>{
     Navigator.pushNamed(context, '/worker', arguments: w);
   }
 
-    Future<Null> _refreshworkers() async {
-    await new Future.delayed(new Duration(seconds: 2));
-    await DBProvider.db.getAllWalletClients(_w).then((wDatabaseList)=>{
-      setState(() {
-        data = wDatabaseList;
-      })
-    });
+  Future<dynamic> _refreshworkers() async {
+      return Api.GetResponse(_w.alias,_w.id).then((_res){ DBProvider.db.getAllWalletClients(_w).then((wDatabaseList) =>
+      {setState(() { data = wDatabaseList;})});});
 
   }
 

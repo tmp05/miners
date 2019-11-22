@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/wallets.dart';
 import 'package:flutter_app/Database.dart';
 import 'constants.dart' as Constants;
 import 'api.dart' as Api;
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import 'package:intl/intl.dart';
+
 
 class walletslist extends StatefulWidget{
 
@@ -16,7 +20,7 @@ class walletslist extends StatefulWidget{
 class walletslistState extends State<walletslist>{
 
   List<wallets> data = [];
-  String _swipeDirection = "";
+  String _info = "";
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =  new GlobalKey<RefreshIndicatorState>();
 
@@ -83,6 +87,9 @@ class walletslistState extends State<walletslist>{
   void initState(){
     super.initState();
     _refreshwallets();
+    Timer.periodic(Duration(minutes: 1), (timer) {
+      _refreshwallets();
+     });
     Future.delayed(Duration(milliseconds: 200)).then((_) {
       _refreshIndicatorKey.currentState?.show();
     });
@@ -93,7 +100,7 @@ class walletslistState extends State<walletslist>{
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text('Wallets:' +data.length.toString()+_swipeDirection),
+        title: Text(_info),
           actions: <Widget>[
             InkWell(
             child: Icon(Icons.add),
@@ -133,10 +140,10 @@ class walletslistState extends State<walletslist>{
   }
 
   Future<Null> _refreshwallets() async {
-    await new Future.delayed(new Duration(seconds: 5));
     return Api.GetResponseForAll(data).then((_res){ DBProvider.db.getAllWallets().then((wWalletsList) =>
-    {setState(() { data = wWalletsList;})});});
-
+    {setState(() {
+      data = wWalletsList;
+      _info = 'Wallets:' +data.length.toString()+". Actual at "+DateFormat('yyyy-MM-dd kk:mm').format(DateTime.now());})});});
   }
 
 }

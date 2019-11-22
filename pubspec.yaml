@@ -31,6 +31,9 @@ dependencies:
   flutter_native_timezone: any
   swipedetector: ^1.2.0
   liquid_pull_to_refresh: ^1.1.0
+  modal_progress_hud: ^0.1.3
+  intl: ^0.16.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
