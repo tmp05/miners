@@ -23,8 +23,6 @@ class workerslistState extends State<workerslist>{
 
   List<workersdata> data = [];
 
-  var timezoneOffset = new DateTime.now().timeZoneOffset;
-
   List <Widget> _buildList() {
     return data.map((workersdata w)=>ListTile(
       title : Text(w.id_worker),
