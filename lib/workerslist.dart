@@ -5,6 +5,7 @@ import 'package:flutter_app/Database.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'api.dart' as Api;
 import 'package:intl/intl.dart';
+import 'package:modal_progress_hud/modal_progress_hud.dart';
 
 class workerslist extends StatefulWidget{
   wallets w;
@@ -20,6 +21,7 @@ class workerslistState extends State<workerslist>{
   wallets _w;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =  new GlobalKey<RefreshIndicatorState>();
   workerslistState({@required wallets w}) : _w = w;
+  bool _loading = false;
 
   List<workersdata> data = [];
 
@@ -38,6 +40,9 @@ class workerslistState extends State<workerslist>{
   @override
   void initState(){
     super.initState();
+    setState(() {
+      _loading = true;
+    });
     _refreshworkers();
     Future.delayed(Duration(milliseconds: 200)).then((_) {
       _refreshIndicatorKey.currentState?.show();
@@ -47,28 +52,31 @@ class workerslistState extends State<workerslist>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(_w.comment+"("+data.length.toString()+")"),
-        ),
-        body: LiquidPullToRefresh(
-            key: _refreshIndicatorKey,
-            showChildOpacityTransition:true,
-            onRefresh:_refreshworkers,
-            child: ListView(
-              children: _buildList(),
-
-            )
-        ),
+      appBar: AppBar(
+        title: Text(_w.comment+"("+data.length.toString()+")"),
+      ),
+      body: ModalProgressHUD(
+          child:  LiquidPullToRefresh(
+              key: _refreshIndicatorKey,
+              showChildOpacityTransition:true,
+              onRefresh:_refreshworkers,
+              child: ListView(
+                children: _buildList(),
+              )
+          ),
+          inAsyncCall: _loading),
     );
   }
+
+
 
   void onTapped(workersdata w) {
     Navigator.pushNamed(context, '/worker', arguments: w);
   }
 
   Future<dynamic> _refreshworkers() async {
-      return Api.GetResponse(_w.alias,_w.id).then((_res){ DBProvider.db.getAllWalletClients(_w).then((wDatabaseList) =>
-      {setState(() { data = wDatabaseList;})});});
+     return Api.GetResponse(_w.alias,_w.id).then((_res){ DBProvider.db.getAllWalletClients(_w).then((wDatabaseList) =>
+      {setState(() { data = wDatabaseList; _loading = false;})});});
 
   }
 

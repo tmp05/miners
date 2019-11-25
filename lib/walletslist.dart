@@ -143,7 +143,7 @@ class walletslistState extends State<walletslist>{
     return Api.GetResponseForAll(data).then((_res){ DBProvider.db.getAllWallets().then((wWalletsList) =>
     {setState(() {
       data = wWalletsList;
-      _info = 'Wallets:' +data.length.toString()+". Actual at "+DateFormat('yyyy-MM-dd kk:mm').format(DateTime.now());})});});
+      _info = 'Wallets(' +data.length.toString()+") Now  "+DateFormat('dd.MM kk:mm').format(DateTime.now());})});});
   }
 
 }
