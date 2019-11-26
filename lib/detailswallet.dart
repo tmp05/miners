@@ -94,7 +94,7 @@ class WalletViewState extends State<WalletView>{
             new RaisedButton(
                 onPressed: _submit,
                 child: Text(
-                    'Cохранить',
+                    'Save',
                     style: TextStyle(fontSize: 15)
                 )),
 

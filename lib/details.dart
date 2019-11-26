@@ -50,7 +50,7 @@ class WorkerViewState extends State<WorkerView>{
                 _saveState();
              },
                child: Text(
-                   'Cохранить',
+                   'Save',
                    style: TextStyle(fontSize: 15)
                )),
 
