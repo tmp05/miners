@@ -17,6 +17,7 @@ class WalletView extends StatefulWidget{
 
 class WalletViewState extends State<WalletView>{
   wallets _w;
+  List<String> _servers = [];
   final _formKey = GlobalKey<FormState>();
 
   // manage state of modal progress HUD widget
@@ -29,7 +30,7 @@ class WalletViewState extends State<WalletView>{
 
     if (_isInvalidAsyncId) {
       // disable message until after next async call
-      _isInvalidAsyncId = false;
+      setState(() {_isInvalidAsyncId = false;});
       return 'Incorrect Id for this Wallet';
     }
     return null;
@@ -44,8 +45,8 @@ class WalletViewState extends State<WalletView>{
       top: true,
       child: Form(
         key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           children: <Widget>[
             TextFormField(
               key: Key('id'),
@@ -56,14 +57,31 @@ class WalletViewState extends State<WalletView>{
                 setState(() {widget.w.id = newval;});
               },
             ),
-            TextFormField(
-              validator: (value){
-                if (value.isEmpty) return 'Alias is empty';
-              },
-              decoration: new InputDecoration(labelText: "Alias"),
-              initialValue:_w.alias,
-              onChanged: (newval){
-                setState(() {widget.w.alias = newval;});
+            new FormField(
+              builder: (FormFieldState state) {
+                return InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: 'Alias',
+                  ),
+                  isEmpty: widget.w.alias == '',
+                  child: new DropdownButtonHideUnderline(
+                    child: new DropdownButton(
+                      value: widget.w.alias,
+                      isDense: true,
+                      onChanged: (String newValue) {
+                        setState(() {
+                          widget.w.alias= newValue;
+                        });
+                      },
+                      items: _servers.map((String value) {
+                        return new DropdownMenuItem(
+                          value: value,
+                          child: new Text(value),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                );
               },
             ),
             TextFormField(
@@ -101,14 +119,6 @@ class WalletViewState extends State<WalletView>{
     );
   }
 
-  _check(){
-    if (_w.id=='') {return 'Id is empty';}
-    Api.GetResponse(_w.alias, _w.id ?? '').then((res) {
-      if (res) {return null;}
-      else {return 'Wrong Id for the Alias';}
-    });
-  }
-
   void _submit() {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
@@ -130,9 +140,27 @@ class WalletViewState extends State<WalletView>{
             _isInvalidAsyncId = true;
           }
         });
-        if (!_isInvalidAsyncId) {_saveState();};
+        if (!_isInvalidAsyncId) {_saveState();}
+        else { setState(() {_isInAsyncCall = false; });}
       });
     }
+  }
+
+  @override
+  void initState(){
+      super.initState();
+      _getservers();
+  }
+
+
+  Future<dynamic> _getservers() async {
+    setState(() { _isInAsyncCall = true; });
+    return Api.GetServers().then((_res){
+      setState(() {
+        _servers = _res;
+        _isInAsyncCall = false;
+      });
+    });
   }
 
   _saveState() async{

@@ -25,7 +25,6 @@ class DBProvider {
 
   initDB() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    print(documentsDirectory.path);
     String path = join(documentsDirectory.path, Constants.Database_name);
     return await openDatabase(path, version: 1, onOpen: (db) {},
         onCreate: (Database db, int version) async {
@@ -56,12 +55,10 @@ class DBProvider {
 
   newClient(workersdata newClient) async {
     final db = await database;
-    print(newClient);
     var raw = await db.rawInsert(
              "INSERT Into Workers (id_worker, lastbeat,hr,hr2,offline,date)"
                  " VALUES (?,?,?,?,?,?)",
              [newClient.id_worker, newClient.lastBeat, newClient.hr, newClient.hr2,(newClient.offline)? 1 : 0,newClient.date]);
-    print(raw);
     return raw;
   }
 
@@ -73,13 +70,11 @@ class DBProvider {
           "INSERT Into WorkersInfo (id, comment,wallet)"
               " VALUES (?,?,?)",
           [newClient.id, newClient.comment, newClient.wallet]);
-      print(raw);
       return raw;
     }
      else{
       var raw = await db.rawUpdate(
            "UPDATE  WorkersInfo SET comment = '"+newClient.comment+"', wallet='"+newClient.wallet+"' where id ='"+newClient.id+"'");
-      print(raw);
       return raw;
      }
   }

@@ -14,8 +14,6 @@ GetResponse(String alias, String id) async{
     double datedouble = new DateTime.now().millisecondsSinceEpoch/1000.toInt();
     int dateint = datedouble.toInt();
     alldata.forEach((String key, dynamic val) async {
-      print(key);
-      print(val);
       var record = workersdata(id_worker: key,
           lastBeat: val["lastBeat"],
           hr: val["hr"].toDouble(),
@@ -36,4 +34,19 @@ Future<bool> GetResponseForAll(List<wallets> list) async{
     GetResponse(item.alias, item.id);
   }
   return true;
+}
+
+GetServers() async{
+  final response2 = await http.get("https://apidoc.2miners.com/2miners_api.json");
+  if (response2.statusCode == 200) {
+  var alldata = (json.decode(response2.body) as Map)['servers'] ;
+  var _data = new List<String>();
+    for (var name in alldata) {
+      var _tempString = name["url"].toString();
+      _tempString = _tempString.substring(0,_tempString.length-4);
+      _data.add(_tempString);
+    }
+
+   return _data;
+  }
 }
