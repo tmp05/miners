@@ -36,9 +36,10 @@ Future<bool> GetResponseForAll(List<wallets> list) async{
   return true;
 }
 
-GetServers() async{
+Future<dynamic> GetServers() async{
   final response2 = await http.get("https://apidoc.2miners.com/2miners_api.json");
   if (response2.statusCode == 200) {
+    print("Response code : ${response2.statusCode}");
   var alldata = (json.decode(response2.body) as Map)['servers'] ;
   var _data = new List<String>();
     for (var name in alldata) {
@@ -49,4 +50,5 @@ GetServers() async{
 
    return _data;
   }
+  else {   throw Exception('Failed to load servers');  }
 }
